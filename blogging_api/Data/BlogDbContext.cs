@@ -11,5 +11,5 @@ public class BlogDbContext : DbContext
     }
 
     public DbSet<Blog> BlogPosts => Set<Blog>();
-    public DbSet<BlogTags> BlogTags => Set<BlogTags>();
+    public DbSet<BlogTag> BlogTags => Set<BlogTag>();
 }

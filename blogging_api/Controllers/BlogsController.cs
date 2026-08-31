@@ -1,6 +1,7 @@
 using blogging_api.Dtos;
 using blogging_api.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace blogging_api.Controllers;
 
@@ -15,17 +16,46 @@ public class BlogsController : ControllerBase
         _service = service;
     }
 
+    [HttpPost]
+    public async Task<ActionResult<BlogResponse>> CreateBlog([FromBody] CreateBlogRequest request)
+    {
+        var createdBlog = await _service.CreateBlogAsync(request);
+        return createdBlog;
+    }
+
     [HttpGet]
-    public async Task<ActionResult<GetBlogResponse>> GetAllBlogs()
+    public async Task<ActionResult<BlogResponse>> GetAllBlogs()
     {
         var blogs = await _service.GetAllBlogsAsync();
         return Ok(blogs);
     }
 
-    [HttpPost]
-    public async Task<ActionResult<CreateBlogResponse>> CreateBlog([FromBody] CreateBlogRequest request)
+    [HttpPut("{id:int}")]
+    public async Task<ActionResult<BlogResponse>> UpdateBlog(
+        [FromRoute] int id,
+        [FromBody] UpdateBlogRequest request
+    )
     {
-        var createdBlog = await _service.CreateBlogAsync(request);
-        return createdBlog;
+        var result = await _service.UpdateBlogAsync(request);
+        
+        if (result is not null)
+        {
+            return result;
+        }
+
+        return NotFound();
+    }
+
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> DeleteBlogById([FromRoute] int id)
+    {
+        var success = await _service.DeleteBlogByIdAsync(id);
+
+        if (success)
+        {
+            return Ok();
+        }
+
+        return Problem();
     }
 }
