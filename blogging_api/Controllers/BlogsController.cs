@@ -1,12 +1,11 @@
 using blogging_api.Dtos;
 using blogging_api.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace blogging_api.Controllers;
 
 [ApiController]
-[Route("/api/[controller]")]
+[Route("api/[controller]")]
 public class BlogsController : ControllerBase
 {
     private readonly BlogService _service;

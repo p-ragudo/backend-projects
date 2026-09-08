@@ -1,7 +1,6 @@
 using blogging_api.Data;
 using blogging_api.Dtos;
 using blogging_api.Models;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 namespace blogging_api.Services;
@@ -19,10 +18,32 @@ public class BlogService
         TimeZoneInfo targetZone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Manila");
         DateTimeOffset phDateTime = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, targetZone);
 
+        var incomingTagNames = dto.Tags
+            .Select(t => t.Trim())
+            .Where(t => !string.IsNullOrWhiteSpace(t))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        
+        var existingTags = await _context.BlogTags
+            .Where(t => incomingTagNames.Contains(t.Tag))
+            .ToListAsync();
+        
+        var existingTagNames = existingTags
+            .Select(t => t.Tag.ToLowerInvariant())
+            .ToHashSet();
+        
+        var newTags = incomingTagNames
+            .Where(name => !existingTagNames.Contains(name.ToLowerInvariant()))
+            .Select(name => new BlogTag { Tag = name})
+            .ToList();
+
+        var allTags = existingTags.Concat(newTags).ToList();
+
         var blog = new Blog
         {
             Title = dto.Title,
             Content = dto.Content,
+            Tags = allTags,
             CreatedAt = phDateTime
         };
 

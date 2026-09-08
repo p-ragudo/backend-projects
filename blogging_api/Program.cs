@@ -5,13 +5,16 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-var serverVersion = new MySqlServerVersion(new Version(5, 5, 62));
 
 builder.Services.AddDbContext<BlogDbContext>(options =>
-    options.UseMySql(
-        connectionString,
-        serverVersion
-    )
+    options.UseSqlServer(connectionString, sqlOptions =>
+    {
+        sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(10),
+            errorNumbersToAdd: null
+        );
+    })
 );
 
 builder.Services.AddScoped<BlogService>();
@@ -19,7 +22,14 @@ builder.Services.AddControllers();
 
 var app = builder.Build();
 
-// app.UseHttpsRedirection();
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor |
+                       Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
+});
+
+app.MapGet("/", () => "here");
+
 app.MapControllers();
 
 app.Run();

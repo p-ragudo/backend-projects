@@ -7,7 +7,7 @@ public record CreateBlogRequest(
     [Required(ErrorMessage = "Title is required")]
     string Title,
     string Content,
-    List<BlogTag> Tags
+    List<string> Tags
 );
 
 public record UpdateBlogRequest(

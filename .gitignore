@@ -58,3 +58,5 @@ project.assets.json
 Thumbs.db
 ehthumbs.db
 [Dd]esktop.ini
+*.deb
+test.http

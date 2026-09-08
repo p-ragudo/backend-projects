@@ -17,12 +17,12 @@ namespace blogging_api.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.0")
-                .HasAnnotation("Relational:MaxIdentifierLength", 64);
+                .HasAnnotation("ProductVersion", "10.0.12")
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("BlogBlogTags", b =>
+            modelBuilder.Entity("BlogBlogTag", b =>
                 {
                     b.Property<int>("BlogsId")
                         .HasColumnType("int");
@@ -34,7 +34,7 @@ namespace blogging_api.Migrations
 
                     b.HasIndex("TagsId");
 
-                    b.ToTable("BlogBlogTags");
+                    b.ToTable("BlogBlogTag");
                 });
 
             modelBuilder.Entity("blogging_api.Models.Blog", b =>
@@ -43,42 +43,45 @@ namespace blogging_api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("EditedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.ToTable("BlogPosts");
                 });
 
-            modelBuilder.Entity("blogging_api.Models.BlogTags", b =>
+            modelBuilder.Entity("blogging_api.Models.BlogTag", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Tag")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.ToTable("BlogTags");
                 });
 
-            modelBuilder.Entity("BlogBlogTags", b =>
+            modelBuilder.Entity("BlogBlogTag", b =>
                 {
                     b.HasOne("blogging_api.Models.Blog", null)
                         .WithMany()
@@ -86,7 +89,7 @@ namespace blogging_api.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("blogging_api.Models.BlogTags", null)
+                    b.HasOne("blogging_api.Models.BlogTag", null)
                         .WithMany()
                         .HasForeignKey("TagsId")
                         .OnDelete(DeleteBehavior.Cascade)
