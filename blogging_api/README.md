@@ -6,17 +6,6 @@ This is **Project 1** of the [20 Backend Project Ideas Roadmap](https://roadmap.
 
 ---
 
-## Features
-
-- **Full CRUD Operations**: Create, read, update, and delete blog posts.
-- **Tag Management**: Many-to-many associations between posts and tags.
-- **Dynamic Search & Filtering**:
-  - Filter posts by multiple keywords in title or content.
-  - Filter posts matching one or more tags.
-- **Query Optimizations**: Read-only queries using `AsNoTracking()` and database-level projections via `.Select()`.
-
----
-
 ## Tech Stack
 
 - **Framework**: ASP.NET Core (.NET 10+)
@@ -25,100 +14,39 @@ This is **Project 1** of the [20 Backend Project Ideas Roadmap](https://roadmap.
 - **Architecture**: Controller-Service pattern using typed DTO records
 
 ---
+## Endpoints
 
-## API Endpoints
-
-### Blog Posts
-
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/blogs` | Retrieve all blog posts (supports search, tags, pagination) |
-| `GET` | `/api/blogs/{id}` | Retrieve a single blog post by its unique ID |
-| `POST` | `/api/blogs` | Create and publish a new blog post |
-| `PUT` | `/api/blogs/{id}` | Update an existing blog post by ID |
-| `DELETE` | `/api/blogs/{id}` | Delete a blog post by ID |
-
----
-
-## Query Parameters (`GET /api/blogs`)
-
-| Parameter | Type | Description | Example |
+| Method | Endpoint | Query / Body | Description |
 | :--- | :--- | :--- | :--- |
-| `term` | `string` (array) | Search keywords in title or content | `?term=programming&term=solo` |
-| `tag` | `string` (array) | Filter posts containing specific tags | `?tag=csharp&tag=backend` |
-| `page` | `int` | Current page number (default: `1`) | `?page=2` |
-| `pageSize` | `int` | Number of posts per page (default: `10`) | `?pageSize=5` |
+| `GET` | `/api/blogs` | `?term=...&tag=...&page=1&pageSize=10` | List posts (filtered, paginated) |
+| `GET` | `/api/blogs/{id}` | — | Get post by ID |
+| `POST` | `/api/blogs` | `{ title, content, tags: [] }` | Create a post |
+| `PUT` | `/api/blogs/{id}` | `{ title, content, tags: [] }` | Update a post |
+| `DELETE`| `/api/blogs/{id}` | — | Delete a post |
 
 ---
 
-## Request & Response Schemas
-
-### Create / Update Request (`POST`, `PUT`)
+## Quick Example
 
 ```json
+// POST /api/blogs
 {
-  "title": "Getting Started with ASP.NET Core",
-  "content": "Step-by-step guide to setting up a REST API using EF Core.",
-  "tags": [
-    "csharp",
-    "dotnet",
-    "backend"
-  ]
+  "title": "Clean Architecture in .NET",
+  "content": "Exploring repository patterns and EF Core optimizations.",
+  "tags": ["dotnet", "csharp", "backend"]
 }
 ```
-
-### Blog Response (`GET`)
-
-```json
-{
-  "id": 1,
-  "title": "Getting Started with ASP.NET Core",
-  "content": "Step-by-step guide to setting up a REST API using EF Core.",
-  "tags": [
-    "csharp",
-    "dotnet",
-    "backend"
-  ],
-  "createdAt": "2026-09-09T07:25:01.925Z",
-  "editedAt": null
-}
-```
-
 ---
 
 ## Getting Started
 
-### Prerequisites
+```bash
+git clone [https://github.com/p-ragudo/backend-projects.git](https://github.com/p-ragudo/backend-projects.git)
+cd backend-projects/blogging_api
 
-- [.NET SDK](https://dotnet.microsoft.com/download) (8.0 or later)
-- Configured database instance
+# Update ConnectionStrings:DefaultConnection in appsettings.json
+dotnet ef database update
+dotnet run
+```
 
-### Installation & Run
-
-1. **Clone the repository:**
-   ```bash
-   git clone [https://github.com/your-username/blogging-api.git](https://github.com/your-username/blogging-api.git)
-   cd blogging-api
-   ```
-
-2. **Configure connection string:**
-   Update your database credentials in `appsettings.json` or `appsettings.Development.json`:
-   ```json
-   {
-     "ConnectionStrings": {
-       "DefaultConnection": "Server=localhost;Database=BlogDb;User Id=postgres;Password=yourpassword;"
-     }
-   }
-   ```
-
-3. **Apply EF Core migrations:**
-   ```bash
-   dotnet ef database update
-   ```
-
-4. **Launch the application:**
-   ```bash
-   dotnet run
-   ```
-
-The API will start locally at `https://localhost:5001` or `http://localhost:5000` with Swagger documentation available at `/openapi/v1.json`.
+Access the OpenAPI document at `http://localhost:8080/openapi/v1.json`.
