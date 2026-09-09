@@ -11,8 +11,6 @@ public record CreateBlogRequest(
 );
 
 public record UpdateBlogRequest(
-    [Required(ErrorMessage = "Id is required")]
-    int Id,
     string? Title,
     string? Content,
     List<string>? Tags

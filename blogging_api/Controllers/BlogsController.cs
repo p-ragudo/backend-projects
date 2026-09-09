@@ -55,7 +55,7 @@ public class BlogsController : ControllerBase
         [FromBody] UpdateBlogRequest request
     )
     {
-        var result = await _service.UpdateBlogAsync(request);
+        var result = await _service.UpdateBlogAsync(id, request);
         
         if (result is not null)
         {

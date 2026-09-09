@@ -153,11 +153,11 @@ public class BlogService
         return response;
     }
 
-    public async Task<BlogResponse?> UpdateBlogAsync(UpdateBlogRequest dto) 
+    public async Task<BlogResponse?> UpdateBlogAsync(int id, UpdateBlogRequest dto) 
     {
         var blog = await _context.BlogPosts
             .Include(b => b.Tags)
-            .FirstOrDefaultAsync(t => t.Id == dto.Id);
+            .FirstOrDefaultAsync(t => t.Id == id);
 
         if (blog == null)
         {
