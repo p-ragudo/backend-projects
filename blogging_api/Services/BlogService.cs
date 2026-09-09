@@ -60,10 +60,63 @@ public class BlogService
         );
     }
 
-    public async Task<List<BlogResponse>?> GetAllBlogsAsync()
+    public async Task<List<BlogResponse>?> GetBlogsAsync(BlogQueryParams query)
     {
-        var blogs = await _context.BlogPosts
+        if (query.Terms == null && query.Tags == null)
+        {
+            var blogs = await _context.BlogPosts
+                .AsNoTracking()
+                .Select(b => new BlogResponse(
+                    b.Id,
+                    b.Title,
+                    b.Content,
+                    b.Tags.Select(t => t.Tag).ToList(),
+                    b.CreatedAt,
+                    b.EditedAt
+                ))
+                .ToListAsync();
+            
+            return blogs;
+        }
+
+        var blogsQuery = _context.BlogPosts
             .AsNoTracking()
+            .AsQueryable();
+
+        if (query.Terms is { Count: > 0})
+        {
+            var terms = query.Terms
+                .Where(t => !string.IsNullOrWhiteSpace(t))
+                .Select(t => t.Trim().ToLower())
+                .Distinct()
+                .ToList();
+
+            if (terms.Count > 0)
+            {
+                blogsQuery = blogsQuery.Where(b =>
+                    terms.Any(term =>
+                        b.Title.ToLower().Trim().Contains(term) ||
+                        b.Content.ToLower().Trim().Contains(term))); 
+            }
+        }
+
+        if (query.Tags is { Count: > 0})
+        {
+            var targetTags = query.Tags
+                .Where(t => !string.IsNullOrWhiteSpace(t))
+                .Select(t => t.Trim().ToLower())
+                .Distinct()
+                .ToList();
+            
+            if (targetTags.Count > 0)
+            {
+                blogsQuery = blogsQuery.Where(b =>
+                    b.Tags.Any(t => targetTags.Contains(t.Tag.Trim().ToLower())));
+            }
+        }
+
+        var results = await blogsQuery
+            .OrderByDescending(b => b.CreatedAt)
             .Select(b => new BlogResponse(
                 b.Id,
                 b.Title,
@@ -73,8 +126,31 @@ public class BlogService
                 b.EditedAt
             ))
             .ToListAsync();
+
+        return results;
+    }
+
+    public async Task<BlogResponse?> GetBlogById(int id)
+    {
+        var blog = await _context.BlogPosts
+            .Include(b => b.Tags)
+            .FirstOrDefaultAsync(b => b.Id == id);
+
+        if (blog == null)
+        {
+            return null;
+        }
         
-        return blogs;
+        var response = new BlogResponse(
+            blog.Id,
+            blog.Title,
+            blog.Content,
+            blog.Tags.Select(b => b.Tag).ToList(),
+            blog.CreatedAt,
+            blog.EditedAt
+        );
+
+        return response;
     }
 
     public async Task<BlogResponse?> UpdateBlogAsync(UpdateBlogRequest dto) 

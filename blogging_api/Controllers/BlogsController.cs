@@ -1,6 +1,7 @@
 using blogging_api.Dtos;
 using blogging_api.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.ResponseCaching;
 
 namespace blogging_api.Controllers;
 
@@ -19,14 +20,33 @@ public class BlogsController : ControllerBase
     public async Task<ActionResult<BlogResponse>> CreateBlog([FromBody] CreateBlogRequest request)
     {
         var createdBlog = await _service.CreateBlogAsync(request);
+
+        if (createdBlog == null)
+        {
+            return NotFound();
+        }
+
         return createdBlog;
     }
 
     [HttpGet]
-    public async Task<ActionResult<BlogResponse>> GetAllBlogs()
+    public async Task<ActionResult<BlogResponse>> GetBlogs([FromQuery] BlogQueryParams query)
     {
-        var blogs = await _service.GetAllBlogsAsync();
+        var blogs = await _service.GetBlogsAsync(query);
         return Ok(blogs);
+    }
+
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<BlogResponse>> GetBlogById(int id)
+    {
+        var response = await _service.GetBlogById(id);
+        
+        if (response == null)
+        {
+            return NotFound();
+        }
+
+        return response;
     }
 
     [HttpPut("{id:int}")]

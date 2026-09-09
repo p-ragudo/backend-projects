@@ -17,3 +17,8 @@ public record UpdateBlogRequest(
     string? Content,
     List<string>? Tags
 );
+
+public record BlogQueryParams(
+    List<string>? Terms = null,
+    List<string>? Tags = null
+);
