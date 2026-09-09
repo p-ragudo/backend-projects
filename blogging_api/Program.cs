@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
 builder.Services.AddDbContext<BlogDbContext>(options =>
     options.UseSqlServer(connectionString, sqlOptions =>
     {
@@ -19,6 +18,7 @@ builder.Services.AddDbContext<BlogDbContext>(options =>
 
 builder.Services.AddScoped<BlogService>();
 builder.Services.AddControllers();
+builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
@@ -29,7 +29,7 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
 });
 
 app.MapGet("/", () => "here");
-
+app.MapOpenApi();
 app.MapControllers();
 
 app.Run();
