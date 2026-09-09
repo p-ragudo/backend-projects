@@ -18,7 +18,7 @@ This is **Project 1** of the [20 Backend Project Ideas Roadmap](https://roadmap.
 
 | Method | Endpoint | Query / Body | Description |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/api/blogs` | `?term=...&tag=...&page=1&pageSize=10` | List posts (filtered, paginated) |
+| `GET` | `/api/blogs` | `?term=...&tag=...` | List filtered posts |
 | `GET` | `/api/blogs/{id}` | — | Get post by ID |
 | `POST` | `/api/blogs` | `{ title, content, tags: [] }` | Create a post |
 | `PUT` | `/api/blogs/{id}` | `{ title, content, tags: [] }` | Update a post |
