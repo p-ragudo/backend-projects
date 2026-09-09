@@ -41,7 +41,7 @@ This is **Project 1** of the [20 Backend Project Ideas Roadmap](https://roadmap.
 ## Getting Started
 
 ```bash
-git clone [https://github.com/p-ragudo/backend-projects.git](https://github.com/p-ragudo/backend-projects.git)
+git clone https://github.com/p-ragudo/backend-projects.git
 cd backend-projects/blogging_api
 
 # Update ConnectionStrings:DefaultConnection in appsettings.json
