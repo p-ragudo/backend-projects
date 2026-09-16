@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using todo_list_api;
 
@@ -11,9 +12,11 @@ using todo_list_api;
 namespace todo_list_api.Migrations
 {
     [DbContext(typeof(DbContext))]
-    partial class AuthDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260916065644_AddedTodoItemsToAuthDbContext")]
+    partial class AddedTodoItemsToAuthDbContext
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

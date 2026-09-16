@@ -11,7 +11,7 @@ using todo_list_api;
 
 namespace todo_list_api.Migrations
 {
-    [DbContext(typeof(AuthDbContext))]
+    [DbContext(typeof(DbContext))]
     [Migration("20260909225613_InitialIdentitySetup")]
     partial class InitialIdentitySetup
     {

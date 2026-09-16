@@ -2,14 +2,17 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
+using todo_list_api.TodoService;
+
 namespace todo_list_api;
 
-public class AuthDbContext: IdentityDbContext<IdentityUser>
+public class DbContext: IdentityDbContext<IdentityUser>
 {
-    public AuthDbContext(DbContextOptions options) : base(options)
+    public DbContext(DbContextOptions options) : base(options)
     {
-        
     }
+
+    public DbSet<TodoItem> TodoItems { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
