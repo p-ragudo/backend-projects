@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace todo_list_api.TodoService;
 
-public class TodoService
+public class TodoService : ITodoService
 {
     private readonly DbContext _context;
     private readonly TimeZoneInfo TargetTimeZone =
@@ -76,7 +76,23 @@ public class TodoService
         return items.ToQueryResponse();
     }
 
-    public async Task<TodoEditResponse?> UpdateById(TodoEditRequest request)
+    public async Task<TodoResponse?> GetById(int id)
+    {
+        var item = _context.TodoItems
+            .FirstOrDefault(item => item.Id == id);
+
+        if (item == null)
+        {
+            return null;
+        }
+
+        return item.ToResponse();
+    }
+
+    public async Task<TodoEditResponse?> UpdateById(
+        int id,
+        TodoEditRequest request
+    )
     {
         if (request.Title == null && request.IsCompleted == null)
         {
@@ -84,7 +100,7 @@ public class TodoService
         }
 
         var item = _context.TodoItems
-            .FirstOrDefault(item => item.Id == request.Id);
+            .FirstOrDefault(item => item.Id == id);
         
         if (item == null)
         {
@@ -100,9 +116,9 @@ public class TodoService
         return item.ToEditResponse(TargetTimeZone);
     }
 
-    public async Task<TodoDeleteResponse?> DeleteByItem(TodoDeleteRequest request)
+    public async Task<TodoDeleteResponse?> DeleteById(int id)
     {
-        var item = _context.TodoItems.FirstOrDefault(item => item.Id == request.Id);
+        var item = await _context.TodoItems.FirstOrDefaultAsync(item => item.Id == id);
 
         if (item == null)
         {

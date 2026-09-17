@@ -10,7 +10,6 @@ public record TodoQueryRequest(
 );
 
 public record TodoEditRequest(
-    int Id,
     string? Title,
     bool? IsCompleted
 );
