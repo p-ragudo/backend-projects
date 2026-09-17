@@ -8,16 +8,15 @@ public static class TodoMapExtensions
             item.Id,
             item.Title,
             item.IsCompleted,
-            item.CreatedAtUtc
+            item.CreatedAtUtc,
+            item.EditedAtUtc
         );
     }
 
     public static TodoQueryResponse ToQueryResponse(this List<TodoItem> items)
     {
         return new TodoQueryResponse(
-            items.Select(i => i.ToResponse())
-                .ToList()
-        );
+            items.Select(i => i.ToResponse()).ToList());
     }
 
     public static TodoEditResponse ToEditResponse(this TodoItem item, TimeZoneInfo timeZone)

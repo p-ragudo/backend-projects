@@ -4,7 +4,8 @@ public record TodoResponse (
     int Id,
     string Title,
     bool IsCompleted,
-    DateTimeOffset CreatedAt
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? EditedAt
 );
 
 public record TodoQueryResponse(

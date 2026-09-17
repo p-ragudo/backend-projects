@@ -69,7 +69,9 @@ public class TodoService : ITodoService
             {
                 Id = q.Id,
                 Title = q.Title,
-                IsCompleted = q.IsCompleted
+                IsCompleted = q.IsCompleted,
+                CreatedAtUtc = q.CreatedAtUtc,
+                EditedAtUtc = q.EditedAtUtc
             })
             .ToListAsync();
         
