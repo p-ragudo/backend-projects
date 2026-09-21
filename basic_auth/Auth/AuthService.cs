@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.EntityFrameworkCore;
+using Isopoh.Cryptography.Argon2;
 
 namespace basic_auth.Auth;
 
 public class AuthService
 {
     private readonly IDb _db;
+    private const string DummyArgon2Hash = "$argon2id$v=19$m=65536,t=3,p=1$c29tZXNhbHRzdHJpbmc$5t/g77k7zHwYqG...";
 
     public AuthService(IDb db)
     {
@@ -25,7 +27,29 @@ public class AuthService
         {
             Id = Guid.NewGuid(),
             Email = request.Email,
-            PasswordHash = 
+            PasswordHash = Argon2.Hash(request.Password)
+        };
+
+        _db.Users.Add(newUser);
+        await _db.SaveChangesAsync();
+
+        return new UserResult(
+            true
+        );
+    }
+
+    public async Task<UserResult> LoginAsync(LoginRequest request) 
+    {
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+
+        if (user != null) 
+        {
+            bool isValid = Argon2.Verify(user.PasswordHash, request.Password);
+            return (what do I return?)
         }
+
+        bool isValid = Argon2.Verify(DummyArgon2Hash, "stringsrandom87654321");
+
+        return what do I return?
     }
 }
