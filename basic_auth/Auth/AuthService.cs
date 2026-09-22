@@ -38,7 +38,7 @@ public class AuthService
         );
     }
 
-    public async Task<UserResult> LoginAsync(LoginRequest request) 
+    public async Task<UserResult> LoginAsync(LoginRequest request, string? userAgent) 
     {
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
         bool isValid = false;
@@ -57,7 +57,14 @@ public class AuthService
             throw new UnauthorizedAccessException("Invalid email or password");
         }
 
-        
+        var session = new Session
+        {
+            Id = Session.GenerateSessionToken(),
+            UserId = user.Id,
+            CreatedAt = DateTime.UtcNow,
+            ExpiresAt = DateTime.UtcNow.AddDays(),
+            UserAgent = userAgent
+        };
 
         return what do I return?
     }
