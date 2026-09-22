@@ -41,14 +41,23 @@ public class AuthService
     public async Task<UserResult> LoginAsync(LoginRequest request) 
     {
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+        bool isValid = false;
 
-        if (user != null) 
+        if (user != null)
         {
-            bool isValid = Argon2.Verify(user.PasswordHash, request.Password);
-            return (what do I return?)
+            isValid = Argon2.Verify(user.PasswordHash, request.Password);
+        }
+        else
+        {
+            Argon2.Verify(DummyArgon2Hash, "stringsrandom87654321");
         }
 
-        bool isValid = Argon2.Verify(DummyArgon2Hash, "stringsrandom87654321");
+        if (!isValid || user == null)
+        {
+            throw new UnauthorizedAccessException("Invalid email or password");
+        }
+
+        
 
         return what do I return?
     }
