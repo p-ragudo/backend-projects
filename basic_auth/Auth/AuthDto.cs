@@ -2,10 +2,16 @@ namespace basic_auth.Auth;
 
 public record RegisterRequest(string Email, string Password);
 public record LoginRequest(string Email, string Password);
-public record UserResult(
-    bool IsSuccess,
-    string? Token = null,
+public record RegisterResult(
+    string? SessionToken = null,
     Guid? Id = null,
     string? Email = null,
-    string? ErrorMessage = null
+    DateTime? ExpiresAt = null
+);
+
+public record LoginResult(
+    string SessionToken,
+    Guid UserId,
+    string Email,
+    DateTime ExpiresAt
 );

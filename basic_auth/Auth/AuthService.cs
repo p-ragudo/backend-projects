@@ -7,14 +7,16 @@ namespace basic_auth.Auth;
 public class AuthService
 {
     private readonly IDb _db;
+    private readonly int _sessionTtlSeconds;
     private const string DummyArgon2Hash = "$argon2id$v=19$m=65536,t=3,p=1$c29tZXNhbHRzdHJpbmc$5t/g77k7zHwYqG...";
 
-    public AuthService(IDb db)
+    public AuthService(IDb db, IConfiguration configuration)
     {
         _db = db;
+        _sessionTtlSeconds = configuration.GetValue<int>("Auth:SessionTtlSeconds", 3600);
     }
 
-    public async Task<UserResult> RegisterAsync(RegisterRequest request)
+    public async Task<RegisterResult> RegisterAsync(RegisterRequest request, string? userAgent)
     {
         var userExists = await _db.Users.AnyAsync(u => u.Email == request.Email);
 
@@ -30,15 +32,31 @@ public class AuthService
             PasswordHash = Argon2.Hash(request.Password)
         };
 
+        var rawToken = Session.GenerateSessionToken();
+        var expiresat = DateTime.UtcNow.AddSeconds(_sessionTtlSeconds);
+
+        var session = new Session
+        {
+            TokenHash = Session.HashToken(rawToken),
+            UserId = newUser.Id,
+            CreatedAt = DateTime.UtcNow,
+            ExpiresAt = expiresat,
+            UserAgent = userAgent
+        };
+
         _db.Users.Add(newUser);
+        _db.Sessions.Add(session);
         await _db.SaveChangesAsync();
 
-        return new UserResult(
-            true
+        return new RegisterResult(
+            rawToken,
+            newUser.Id,
+            newUser.Email,
+            expiresat
         );
     }
 
-    public async Task<UserResult> LoginAsync(LoginRequest request, string? userAgent) 
+    public async Task<LoginResult> LoginAsync(LoginRequest request, string? userAgent) 
     {
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
         bool isValid = false;
@@ -57,15 +75,40 @@ public class AuthService
             throw new UnauthorizedAccessException("Invalid email or password");
         }
 
+        var rawToken = Session.GenerateSessionToken();
+        var expiresat = DateTime.UtcNow.AddSeconds(_sessionTtlSeconds);
+
         var session = new Session
         {
-            Id = Session.GenerateSessionToken(),
+            TokenHash = Session.HashToken(rawToken),
             UserId = user.Id,
             CreatedAt = DateTime.UtcNow,
-            ExpiresAt = DateTime.UtcNow.AddDays(),
+            ExpiresAt = expiresat,
             UserAgent = userAgent
         };
 
-        return what do I return?
+        _db.Sessions.Add(session);
+        await _db.SaveChangesAsync();
+        
+        return new LoginResult(
+            rawToken,
+            user.Id,
+            user.Email,
+            expiresat
+        );
+    }
+
+    public async Task LogoutAsync(string rawToken)
+    {
+        if (string.IsNullOrWhiteSpace(rawToken))
+        {
+            return;
+        }
+
+        var hashedToken = Session.HashToken(rawToken);
+
+        await _db.Sessions
+            .Where(s => s.TokenHash == hashedToken)
+            .ExecuteDeleteAsync();
     }
 }
