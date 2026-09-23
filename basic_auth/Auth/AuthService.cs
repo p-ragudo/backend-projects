@@ -1,10 +1,9 @@
-using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.EntityFrameworkCore;
 using Isopoh.Cryptography.Argon2;
 
 namespace basic_auth.Auth;
 
-public class AuthService
+public class AuthService : IAuthService
 {
     private readonly IDb _db;
     private readonly int _sessionTtlSeconds;
@@ -13,7 +12,7 @@ public class AuthService
     public AuthService(IDb db, IConfiguration configuration)
     {
         _db = db;
-        _sessionTtlSeconds = configuration.GetValue<int>("Auth:SessionTtlSeconds", 3600);
+        _sessionTtlSeconds = configuration.GetValue("Auth:SessionTtlSeconds", 3600);
     }
 
     public async Task<RegisterResult> RegisterAsync(RegisterRequest request, string? userAgent)
