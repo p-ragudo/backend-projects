@@ -86,6 +86,10 @@ public class AuthService : IAuthService
             UserAgent = userAgent
         };
 
+        await _db.Sessions
+            .Where(s => s.UserId == user.Id)
+            .ExecuteDeleteAsync();
+
         _db.Sessions.Add(session);
         await _db.SaveChangesAsync();
         

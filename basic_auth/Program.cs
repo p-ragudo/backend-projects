@@ -1,3 +1,4 @@
+using basic_auth.Auth;
 using basic_auth.Data;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
@@ -8,9 +9,13 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<Db>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IDb>(sp => sp.GetRequiredService<Db>());
+
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
@@ -22,5 +27,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.MapGet("/", () => "works");
+app.MapControllers();
 
 app.Run();
