@@ -6,6 +6,7 @@ namespace basic_auth.Auth;
 
 public class Session
 {
+    public Guid Id { get; set; } = Guid.NewGuid();
     public string TokenHash { get; set; } = string.Empty;
     public Guid UserId { get; set; }
     public User User { get; set; } = null!;

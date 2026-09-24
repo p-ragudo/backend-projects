@@ -8,9 +8,9 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<Db>(options =>
-{
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
-});
+
+builder.Services.AddScoped<IDb>(sp => sp.GetRequiredService<Db>());
 
 var app = builder.Build();
 
