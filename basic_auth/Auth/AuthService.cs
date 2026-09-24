@@ -114,4 +114,20 @@ public class AuthService : IAuthService
             .Where(s => s.TokenHash == hashedToken)
             .ExecuteDeleteAsync();
     }
+
+    public async Task<bool> VerifySession(string rawToken)
+    {
+        if (string.IsNullOrWhiteSpace(rawToken))
+        {
+            return false;
+        }
+
+        var hashedToken = Session.HashToken(rawToken);
+
+        var sessionExists = await _db.Sessions
+            .AnyAsync(s => s.TokenHash == hashedToken);
+
+        return await _db.Sessions
+            .AnyAsync(s => s.TokenHash == hashedToken && s.ExpiresAt > DateTime.UtcNow);
+    }
 }

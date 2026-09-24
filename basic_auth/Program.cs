@@ -27,6 +27,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.MapGet("/", () => "works");
+
+app.UseBasicAuth();
+
 app.MapControllers();
 
 app.Run();
