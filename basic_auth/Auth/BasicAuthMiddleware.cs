@@ -17,6 +17,17 @@ public class BasicAuthMiddleware
         HttpContext context,
         IAuthService _authService)
     {
+        var path = context.Request.Path.Value?.ToLowerInvariant() ?? string.Empty;
+
+        if (
+            path == "/" || 
+            path.StartsWith("/auth/register") || 
+            path.StartsWith("/auth/login") || 
+            path.StartsWith("scalar"))
+        {
+            await _next(context);
+        }
+
         if (!context.Request.Cookies.TryGetValue("session_token", out var sessionToken))
         {
             return;
