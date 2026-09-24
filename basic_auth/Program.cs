@@ -15,8 +15,6 @@ builder.Services.AddScoped<IDb>(sp => sp.GetRequiredService<Db>());
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 
-builder.Services.AddControllers();
-
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -25,7 +23,6 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
-app.UseHttpsRedirection();
 app.MapGet("/", () => "works");
 
 app.UseBasicAuth();
