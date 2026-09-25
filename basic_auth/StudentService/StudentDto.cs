@@ -13,9 +13,9 @@ public record CreateStudentResponse(
 );
 
 public record GetStudentsQuery(
-    List<int>? Id,
-    List<string>? FirstName,
-    List<string>? LastName,
+    List<int>? Ids,
+    List<string>? FirstNames,
+    List<string>? LastNames,
     bool? IsEnrolled
 );
 
