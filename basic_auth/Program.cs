@@ -1,5 +1,6 @@
 using basic_auth.Auth;
 using basic_auth.Data;
+using basic_auth.StudentService;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
@@ -12,8 +13,9 @@ builder.Services.AddDbContext<Db>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IDb>(sp => sp.GetRequiredService<Db>());
-
 builder.Services.AddScoped<IAuthService, AuthService>();
+
+builder.Services.AddScoped<IStudentService, StudentService>();
 
 var app = builder.Build();
 
