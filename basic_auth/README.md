@@ -68,9 +68,8 @@ Content-Type: application/json
 }
 
 Response sets an HttpOnly cookie: session_token=<token>
-
-### 2. Fetch Students (Authenticated via Cookie)
 ```
+### 2. Fetch Students (Authenticated via Cookie)
 GET /api/Students?firstNames=John&isEnrolled=true
 Cookie: session_token=<your_session_token>
 ```
