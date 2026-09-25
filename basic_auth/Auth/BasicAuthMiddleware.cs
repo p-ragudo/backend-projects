@@ -23,7 +23,8 @@ public class BasicAuthMiddleware
             path == "/" || 
             path.StartsWith("/auth/register") || 
             path.StartsWith("/auth/login") || 
-            path.StartsWith("/scalar"))
+            path.StartsWith("/scalar") ||
+            path.StartsWith("/openapi"))
         {
             await _next(context);
             return;

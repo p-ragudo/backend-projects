@@ -3,9 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace basic_auth.StudentService;
 
-[Authorize]
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class StudentsController : ControllerBase
 {
     private readonly IStudentService _studentService;
@@ -33,7 +32,7 @@ public class StudentsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult> Get([FromBody] GetStudentsQuery request)
+    public async Task<ActionResult> Get([FromQuery] GetStudentsQuery request)
     {
         try
         {
@@ -95,6 +94,7 @@ public class StudentsController : ControllerBase
         {
             return Problem(
                 detail: ex.Message,
+                statusCode: StatusCodes.Status404NotFound,
                 title: "Database delete operation unsuccessful"
             );
         }
