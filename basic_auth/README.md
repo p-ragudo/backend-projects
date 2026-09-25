@@ -90,7 +90,7 @@ Content-Type: application/json
 
 ## Getting Started
 ```
-git clone [https://github.com/p-ragudo/backend-projects.git](https://github.com/p-ragudo/backend-projects.git)
+git clone https://github.com/p-ragudo/backend-projects.git
 cd backend-projects/basic_auth
 
 # Update ConnectionStrings:DefaultConnection in appsettings.json for PostgreSQL
