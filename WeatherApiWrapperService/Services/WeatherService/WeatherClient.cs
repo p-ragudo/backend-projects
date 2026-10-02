@@ -1,5 +1,3 @@
-using System.Text.Json;
-
 namespace WeatherApiWrapperService.Services.WeatherService;
 
 public class WeatherClient(HttpClient httpClient)
