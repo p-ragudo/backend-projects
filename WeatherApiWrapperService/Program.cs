@@ -12,6 +12,8 @@ builder.Services.AddHttpClient<WeatherClient>(client =>
     client.BaseAddress = new Uri(weatherApiUrl))
     .AddStandardResilienceHandler();
 
+builder.Services.AddScoped<WeatherService>();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
