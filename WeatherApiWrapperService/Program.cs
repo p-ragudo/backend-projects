@@ -13,7 +13,7 @@ var redisConnectionString = builder.Configuration.GetConnectionString("RedisConn
     ?? throw new Exception("Redis connection string is not set");
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
-    ConnectionMultiplexer.Connect(options));
+    ConnectionMultiplexer.Connect(redisConnectionString));
 
 builder.Services.AddScoped(sp =>
 {

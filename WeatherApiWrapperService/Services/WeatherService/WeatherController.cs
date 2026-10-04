@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Mvc;
+
 namespace WeatherApiWrapperService.Services.WeatherService;
 
 [ApiController]
