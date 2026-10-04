@@ -11,7 +11,7 @@ public class WeatherService(
 
     public async Task<WeatherDataDto?> GetWeatherData(GetWeatherRequest request)
     {
-        var cacheKey = $"weather:{request.Location.ToLower()}";
+        var cacheKey = $"weather:{request.Location.ToLowerInvariant()}";
         var cacheResult = redisDb.StringGet(cacheKey);
 
         if (!cacheResult.IsNullOrEmpty)
@@ -30,7 +30,7 @@ public class WeatherService(
             await redisDb.StringSetAsync(
                 cacheKey, 
                 JsonSerializer.Serialize(result),
-                TimeSpan.FromHours(24));   
+                TimeSpan.FromHours(12));   
         }
         
         return result;
