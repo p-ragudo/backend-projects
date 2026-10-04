@@ -1,30 +1,28 @@
+using System.Text.Json;
+using StackExchange.Redis;
+
 namespace WeatherApiWrapperService.Services.WeatherService;
 
-// This service isn't necessary, but I wanted to at least have some use for the deserialization I just wrote
-public class WeatherService
+public class WeatherService(WeatherClient weatherClient, IDatabase redisDb)
 {
-    public void PrintWeatherData(WeatherDataDto dto)
-    {
-        var weatherData = WeatherData.MapFromDto(dto);
-        
-        Console.WriteLine($"Address: {weatherData.Address}");
-        Console.WriteLine($"TimeZone: {weatherData.TimeZone}");
 
-        foreach (var day in weatherData.Days)
+    public async Task<WeatherDataDto?> GetWeatherData(GetWeatherRequest request)
+    {
+        var cacheKey = $"weather:{request.Location.ToLower()}";
+        var cacheResult = redisDb.StringGet(request.Location);
+
+        if (!cacheResult.IsNullOrEmpty)
         {
-            Console.WriteLine("\n");
-            Console.WriteLine($"""
-                DateTime: {day.DateTime}
-                TempMax: {day.TempMax}
-                TempMin: {day.TempMin}
-                Temp: {day.Temp}
-                Humidity: {day.Humidity}
-                Precipitation: {day.Precipitation}
-                WindSpeed: {day.WindSpeed}
-                Pressure: {day.Pressure}
-                CloudCover: {day.CloudCover}
-                Conditions: {day.Conditions}
-            """);
+            return JsonSerializer.Deserialize<WeatherDataDto>(cacheResult.ToString());
         }
+
+        var result = await weatherClient.GetWeatherData(request);
+
+        if (result is not null)
+        {
+            await redisDb.StringSetAsync(cacheKey, JsonSerializer.Serialize(result));   
+        }
+        
+        return result;
     }
 }
