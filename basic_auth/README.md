@@ -8,7 +8,7 @@ A custom authentication and session management exercise built from scratch using
 
 ## Tech Stack
 
-- **Framework**: ASP.NET Core
+- **Framework**: ASP.NET Core (.NET 10+)
 - **Authentication**: Custom Session Cookies & Pipeline Middleware
 - **ORM**: Entity Framework Core
 - **Database**: PostgreSQL (Npgsql)

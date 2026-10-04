@@ -8,7 +8,7 @@ This is **Project 2** of the [20 Backend Project Ideas Roadmap](https://roadmap.
 
 ## Tech Stack
 
-- **Framework**: ASP.NET Core
+- **Framework**: ASP.NET Core (.NET 10+)
 - **Authentication**: ASP.NET Core Identity (`MapIdentityApi`)
 - **ORM**: Entity Framework Core
 - **Database**: SQL Server
