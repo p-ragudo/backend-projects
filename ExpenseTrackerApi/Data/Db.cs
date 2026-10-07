@@ -19,3 +19,4 @@ public class Db : DbContext, IDb
         modelBuilder.HasDefaultSchema("ExpenseTrackerApi");
     }
 }
+
