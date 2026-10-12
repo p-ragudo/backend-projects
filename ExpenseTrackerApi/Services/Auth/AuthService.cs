@@ -21,14 +21,14 @@ public class AuthService(IDb _db, TokenProvider _tokenProvider)
         {
             Id = Guid.NewGuid(),
             Email = request.Email,
+            Username = request.Username,
             PasswordHash = Argon2.Hash(request.Password)
         };
-
-        var jwt = _tokenProvider.Create(newUser);
 
         _db.Users.Add(newUser);
         await _db.SaveChangesAsync();
 
+        var jwt = _tokenProvider.Create(newUser);
         return jwt;
     }
 

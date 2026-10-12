@@ -10,8 +10,8 @@ public class Db : DbContext, IDb
     {
     }
 
-    public DbSet<User> Users { get; }
-    public DbSet<Expense> Expenses { get; }
+    public DbSet<User> Users => Set<User>();
+    public DbSet<Expense> Expenses => Set<Expense>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
