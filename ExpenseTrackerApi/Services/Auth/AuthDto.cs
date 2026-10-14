@@ -1,18 +1,23 @@
 namespace ExpenseTrackerApi.Services.Auth;
 
-public record RegisterRequest(string Email, string Username, string Password);
-public record LoginRequest(string Email, string Password);
-
-public record RegisterResult(
-    string SessionToken,
-    Guid UserId,
-    string Email,
-    DateTime ExpiresAt
+public record RegisterRequest(
+    string Email, 
+    string Username, 
+    string Password
 );
 
-public record LoginResult(
-    string SessionToken,
+public record LoginRequest(
+    string Email, 
+    string Password
+);
+
+public record AuthResponse(
+    string AccessToken,
+    string RefreshToken,
     Guid UserId,
-    string Email,
-    DateTime ExpiresAt
+    string Email
+);
+
+public record RefreshTokenRequest(
+    string RefreshToken
 );

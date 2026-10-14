@@ -8,6 +8,7 @@ public interface IDb
 {
     DbSet<User> Users { get; }
     DbSet<Expense> Expenses { get; }
+    DbSet<RefreshToken> RefreshTokens { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

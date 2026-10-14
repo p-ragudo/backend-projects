@@ -28,7 +28,7 @@ public class AuthService(IDb _db, TokenProvider _tokenProvider)
         _db.Users.Add(newUser);
         await _db.SaveChangesAsync();
 
-        var jwt = _tokenProvider.Create(newUser);
+        var jwt = _tokenProvider.CreateAccessToken(newUser);
         return jwt;
     }
 
@@ -51,6 +51,37 @@ public class AuthService(IDb _db, TokenProvider _tokenProvider)
             throw new UnauthorizedAccessException("Invalid email or password");
         }
 
-        return _tokenProvider.Create(user);
+        return _tokenProvider.CreateAccessToken(user);
+    }
+
+    public async Task<AuthResponse?> RefreshAccessToken(RefreshTokenRequest request)
+    {
+        var requestTokenHash = Argon2.Hash(request.RefreshToken);
+        var existing = await _db.RefreshTokens
+            .FirstOrDefaultAsync(rt => rt.TokenHash == requestTokenHash);
+        
+        if (existing is null)
+        {
+            return null;
+        }
+
+        if (!existing.IsActive)
+        {
+            
+        }
+    }
+
+    private async Task RevokeAllActiveTokensAsync(Guid userId)
+    {
+        var activeTokens = await _db.RefreshTokens
+            .Where(rt => rt.UserId == userId && rt.Revoked == null)
+            .ToListAsync();
+        
+        foreach (var token in activeTokens)
+        {
+            token.Revoked = DateTime.UtcNow;
+        }
+
+        await _db.SaveChangesAsync();
     }
 }

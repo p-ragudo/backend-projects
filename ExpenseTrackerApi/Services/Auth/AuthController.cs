@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace ExpenseTrackerApi.Services.Auth;
 
 [ApiController]
-[Route("auth")]
+[Route("api/auth")]
 [AllowAnonymous]
 public class AuthController(AuthService _authService) : ControllerBase
 {
@@ -52,4 +52,6 @@ public class AuthController(AuthService _authService) : ControllerBase
             });
         }
     }
+
+
 }

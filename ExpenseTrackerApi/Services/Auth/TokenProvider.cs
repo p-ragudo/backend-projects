@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -7,7 +8,7 @@ namespace ExpenseTrackerApi.Services.Auth;
 
 public class TokenProvider(IConfiguration config)
 {
-    public string Create(User user)
+    public string CreateAccessToken(User user)
     {
         // multiple projects share the same secrets space, hence the project prefix
         var secretKey = config["ExpenseTrackerApi:Jwt:SecretKey"]
@@ -24,7 +25,7 @@ public class TokenProvider(IConfiguration config)
                 new Claim("username", user.Username),
             ]),
             Expires = DateTime.UtcNow.AddMinutes(
-                config.GetValue<int>("ExpenseTrackerApi:Jwt:ExpirationInMinutes")),
+                config.GetValue<int>("ExpenseTrackerApi:Jwt:AccessTokenExpirationMinutes")),
             SigningCredentials = credentials,
             Issuer = config["ExpenseTrackerApi:Jwt:Issuer"],
             Audience = config["ExpenseTrackerApi:Jwt:Audience"]
@@ -34,5 +35,11 @@ public class TokenProvider(IConfiguration config)
         string token = handler.CreateToken(tokenDescriptor);
 
         return token;
+    }
+
+    public string GenerateRefreshToken()
+    {
+        var randomBytes = RandomNumberGenerator.GetBytes(64);
+        return Convert.ToBase64String(randomBytes);
     }
 }
