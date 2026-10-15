@@ -23,8 +23,8 @@ public class ExpenseService(IDb _db)
         );
     }
 
-    public async Task<GetExpenseResult> GetAsync()
-    {
+    // public async Task<GetExpenseResult> GetAsync()
+    // {
         
-    }
+    // }
 }

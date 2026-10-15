@@ -14,8 +14,7 @@ public record CreateExpenseResult(
 
 public record GetExpenseRequest(
     string[]? Names,
-    decimal[]? Amounts,
-    ...
+    decimal[]? Amounts
 );
 
 public record GetExpenseResult(
