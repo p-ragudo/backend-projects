@@ -11,6 +11,11 @@ public record LoginRequest(
     string Password
 );
 
+public record LogoutRequest(
+    string UserId,
+    string RefreshToken
+);
+
 public record AuthResponse(
     string AccessToken,
     string RefreshToken,

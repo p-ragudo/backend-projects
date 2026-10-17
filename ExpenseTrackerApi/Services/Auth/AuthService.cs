@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using ExpenseTrackerApi.Data;
@@ -13,7 +14,7 @@ public class AuthService(
 {
     private const string DummyArgon2Hash = "$argon2id$v=19$m=65536,t=3,p=1$c29tZXNhbHRzdHJpbmc$5t/g77k7zHwYqG...";
 
-    public async Task<TokenResult> RegisterAsync(RegisterRequest request)
+    public async Task<TokenResult> RegisterAsync(RegisterRequest request, CancellationToken ct = default)
     {
         var userExists = await _db.Users.AnyAsync(u => u.Email == request.Email);
 
@@ -46,7 +47,7 @@ public class AuthService(
         };
 
         _db.RefreshTokens.Add(newRefreshToken);
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(ct);
 
         return TokenResult.Success(
             generatedRefreshToken,
@@ -56,7 +57,8 @@ public class AuthService(
         );
     }
 
-    public async Task<TokenResult> LoginAsync(LoginRequest request) 
+    // fix ReplacedByTokenId not being set when successful login
+    public async Task<TokenResult> LoginAsync(LoginRequest request, CancellationToken ct = default) 
     {
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
         bool isValid = false;
@@ -75,7 +77,7 @@ public class AuthService(
             return TokenResult.Failure(TokenErrorType.InvalidCredentials);
         }
 
-        await RevokeAllActiveTokensAsync(user.Id);
+        await RevokeAllActiveTokensAsync(user.Id, ct);
 
         var generatedRefreshToken = _tokenProvider.GenerateRefreshToken();
         var generatedRefreshTokenHash = SHA256.HashData(Encoding.UTF8.GetBytes(generatedRefreshToken));
@@ -91,7 +93,7 @@ public class AuthService(
         };
 
         _db.RefreshTokens.Add(newRefreshToken);
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(ct);
 
         return TokenResult.Success(
             generatedRefreshToken,
@@ -101,7 +103,27 @@ public class AuthService(
         );
     }
 
-    public async Task<TokenResult> RefreshAccessToken(RefreshTokenRequest request)
+    public async Task LogoutAsync(
+        string userId,
+        string refreshToken, 
+        CancellationToken ct = default)
+    {
+        var refreshTokenHash = SHA256.HashData(Encoding.UTF8.GetBytes(refreshToken));
+        var existingRefreshToken = await _db.RefreshTokens
+            .FirstOrDefaultAsync(rt => rt.TokenHash == refreshTokenHash);
+
+        if (existingRefreshToken is not null && existingRefreshToken.IsActive)
+        {
+            existingRefreshToken.Revoked = DateTime.UtcNow;
+            await _db.SaveChangesAsync(ct);
+        }
+        else
+        {
+            await RevokeAllActiveTokensAsync(Guid.Parse(userId), ct);
+        }
+    }
+
+    public async Task<TokenResult> RefreshAccessToken(RefreshTokenRequest request, CancellationToken ct = default)
     {
         var requestTokenHash = SHA256.HashData(
             Encoding.UTF8.GetBytes(request.RefreshToken));
@@ -118,7 +140,7 @@ public class AuthService(
         {
             if (existingRefreshToken.Revoked is not null)
             {
-                await RevokeAllActiveTokensAsync(existingRefreshToken.UserId);
+                await RevokeAllActiveTokensAsync(existingRefreshToken.UserId, ct);
                 await _db.SaveChangesAsync();
                 return TokenResult.Failure(TokenErrorType.CompromisedToken);
             }
@@ -151,7 +173,7 @@ public class AuthService(
         existingRefreshToken.ReplacedByTokenId = newRefreshToken.Id;
 
         _db.RefreshTokens.Add(newRefreshToken);
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(ct);
 
         return TokenResult.Success(
             generatedRefreshToken,
@@ -161,11 +183,11 @@ public class AuthService(
         );
     }
 
-    private async Task RevokeAllActiveTokensAsync(Guid userId)
+    private async Task RevokeAllActiveTokensAsync(Guid userId, CancellationToken ct)
     {
         var activeTokens = await _db.RefreshTokens
             .Where(rt => rt.UserId == userId && rt.Revoked == null)
-            .ToListAsync();
+            .ToListAsync(ct);
         
         foreach (var token in activeTokens)
         {
