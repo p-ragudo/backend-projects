@@ -41,9 +41,9 @@ namespace ExpenseTrackerApi.Migrations
                     b.Property<DateTime?>("Revoked")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("TokenHash")
+                    b.Property<byte[]>("TokenHash")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("bytea");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");

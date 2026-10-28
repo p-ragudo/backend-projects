@@ -14,7 +14,7 @@ public class AuthService(
 {
     private const string DummyArgon2Hash = "$argon2id$v=19$m=65536,t=3,p=1$c29tZXNhbHRzdHJpbmc$5t/g77k7zHwYqG...";
 
-    public async Task<TokenResult> RegisterAsync(RegisterRequest request, CancellationToken ct = default)
+    public async Task<TokenResult> RegisterAsync(RegisterRequest request)
     {
         var userExists = await _db.Users.AnyAsync(u => u.Email == request.Email);
 
@@ -34,20 +34,21 @@ public class AuthService(
         _db.Users.Add(newUser);
 
         var generatedRefreshToken = _tokenProvider.GenerateRefreshToken();
-        var generatedRefreshTokenHash = SHA256.HashData(Encoding.UTF8.GetBytes(generatedRefreshToken));
+        var generatedRefreshTokenHash = SHA256.HashData(Encoding.UTF8.GetBytes(generatedRefreshToken)).ToString();
         var generatedAccessToken = _tokenProvider.CreateAccessToken(newUser);
         var expirationMinutes = _configuration.GetValue<int>("ExpenseTrackerApi:Jwt:RefreshTokenExpirationMinutes");
 
         var newRefreshToken = new RefreshToken()
         {
-            TokenHash = generatedRefreshTokenHash,
+            TokenHash = generatedRefreshTokenHash 
+                ?? throw new NullReferenceException("generatedRefreshTokenHash is null"),
             UserId = newUser.Id,
             Created = DateTime.UtcNow,
             Expires = DateTime.UtcNow.AddMinutes(expirationMinutes)
         };
 
         _db.RefreshTokens.Add(newRefreshToken);
-        await _db.SaveChangesAsync(ct);
+        await _db.SaveChangesAsync();
 
         return TokenResult.Success(
             generatedRefreshToken,
@@ -58,7 +59,7 @@ public class AuthService(
     }
 
     // fix ReplacedByTokenId not being set when successful login
-    public async Task<TokenResult> LoginAsync(LoginRequest request, CancellationToken ct = default) 
+    public async Task<TokenResult> LoginAsync(LoginRequest request) 
     {
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
         bool isValid = false;
@@ -77,23 +78,24 @@ public class AuthService(
             return TokenResult.Failure(TokenErrorType.InvalidCredentials);
         }
 
-        await RevokeAllActiveTokensAsync(user.Id, ct);
+        await RevokeAllActiveTokensAsync(user.Id);
 
         var generatedRefreshToken = _tokenProvider.GenerateRefreshToken();
-        var generatedRefreshTokenHash = SHA256.HashData(Encoding.UTF8.GetBytes(generatedRefreshToken));
+        var generatedRefreshTokenHash = SHA256.HashData(Encoding.UTF8.GetBytes(generatedRefreshToken)).ToString();
         var generatedAccessToken = _tokenProvider.CreateAccessToken(user);
         var expirationMinutes = _configuration.GetValue<int>("ExpenseTrackerApi:Jwt:RefreshTokenExpirationMinutes");
 
         var newRefreshToken = new RefreshToken()
         {
-            TokenHash = generatedRefreshTokenHash,
+            TokenHash = generatedRefreshTokenHash
+                ?? throw new NullReferenceException("generatedRefreshTokenHash is null"),
             UserId = user.Id,
             Created = DateTime.UtcNow,
             Expires = DateTime.UtcNow.AddMinutes(expirationMinutes)
         };
 
         _db.RefreshTokens.Add(newRefreshToken);
-        await _db.SaveChangesAsync(ct);
+        await _db.SaveChangesAsync();
 
         return TokenResult.Success(
             generatedRefreshToken,
@@ -105,28 +107,28 @@ public class AuthService(
 
     public async Task LogoutAsync(
         string userId,
-        string refreshToken, 
-        CancellationToken ct = default)
+        string refreshToken)
     {
-        var refreshTokenHash = SHA256.HashData(Encoding.UTF8.GetBytes(refreshToken));
+        var refreshTokenHash = SHA256.HashData(Encoding.UTF8.GetBytes(refreshToken)).ToString();
         var existingRefreshToken = await _db.RefreshTokens
             .FirstOrDefaultAsync(rt => rt.TokenHash == refreshTokenHash);
 
         if (existingRefreshToken is not null && existingRefreshToken.IsActive)
         {
             existingRefreshToken.Revoked = DateTime.UtcNow;
-            await _db.SaveChangesAsync(ct);
+            await _db.SaveChangesAsync();
         }
         else
         {
-            await RevokeAllActiveTokensAsync(Guid.Parse(userId), ct);
+            await RevokeAllActiveTokensAsync(Guid.Parse(userId));
         }
     }
 
     public async Task<TokenResult> RefreshAccessToken(RefreshTokenRequest request, CancellationToken ct = default)
     {
         var requestTokenHash = SHA256.HashData(
-            Encoding.UTF8.GetBytes(request.RefreshToken));
+            Encoding.UTF8.GetBytes(request.RefreshToken))
+            .ToString();
 
         var existingRefreshToken = await _db.RefreshTokens
             .FirstOrDefaultAsync(rt => rt.TokenHash == requestTokenHash);
@@ -140,7 +142,7 @@ public class AuthService(
         {
             if (existingRefreshToken.Revoked is not null)
             {
-                await RevokeAllActiveTokensAsync(existingRefreshToken.UserId, ct);
+                await RevokeAllActiveTokensAsync(existingRefreshToken.UserId);
                 await _db.SaveChangesAsync();
                 return TokenResult.Failure(TokenErrorType.CompromisedToken);
             }
@@ -157,13 +159,14 @@ public class AuthService(
         }
 
         var generatedRefreshToken = _tokenProvider.GenerateRefreshToken();
-        var generatedRefreshTokenHash = SHA256.HashData(Encoding.UTF8.GetBytes(generatedRefreshToken));
+        var generatedRefreshTokenHash = SHA256.HashData(Encoding.UTF8.GetBytes(generatedRefreshToken)).ToString();
         var generatedAccessToken = _tokenProvider.CreateAccessToken(existingUser);
         var expirationMinutes = _configuration.GetValue<int>("ExpenseTrackerApi:Jwt:RefreshTokenExpirationMinutes");
 
         var newRefreshToken = new RefreshToken
         {
-            TokenHash = generatedRefreshTokenHash,
+            TokenHash = generatedRefreshTokenHash
+                ?? throw new NullReferenceException("generatedRefreshTokenHash is null"),
             UserId = existingUser.Id,
             Created = DateTime.UtcNow,
             Expires = DateTime.UtcNow.AddMinutes(expirationMinutes)
@@ -183,11 +186,11 @@ public class AuthService(
         );
     }
 
-    private async Task RevokeAllActiveTokensAsync(Guid userId, CancellationToken ct)
+    private async Task RevokeAllActiveTokensAsync(Guid userId)
     {
         var activeTokens = await _db.RefreshTokens
             .Where(rt => rt.UserId == userId && rt.Revoked == null)
-            .ToListAsync(ct);
+            .ToListAsync();
         
         foreach (var token in activeTokens)
         {

@@ -17,13 +17,11 @@ public class AuthController(
 
     [AllowAnonymous]
     [HttpPost("register")]
-    public async Task<ActionResult> Register(
-        [FromBody] RegisterRequest request,
-        CancellationToken ct)
+    public async Task<ActionResult> Register([FromBody] RegisterRequest request)
     {
         try
         {
-            var result = await _authService.RegisterAsync(request, ct);
+            var result = await _authService.RegisterAsync(request);
 
             if (result.IsSuccess)
             {
@@ -51,13 +49,11 @@ public class AuthController(
 
     [AllowAnonymous]
     [HttpPost("login")]
-    public async Task<ActionResult> Login(
-        [FromBody] LoginRequest request,
-        CancellationToken ct)
+    public async Task<ActionResult> Login([FromBody] LoginRequest request)
     {
         try
         {
-            var result = await _authService.LoginAsync(request, ct);
+            var result = await _authService.LoginAsync(request);
 
             if (result.IsSuccess)
             {
@@ -85,14 +81,14 @@ public class AuthController(
 
     [Authorize]
     [HttpPost("logout")]
-    public async Task<ActionResult> Logout(CancellationToken ct)
+    public async Task<ActionResult> Logout()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
             ?? User.FindFirst("sub")?.Value;
         
         Request.Cookies.TryGetValue("refreshToken", out var refreshToken);
 
-        await _authService.LogoutAsync(userId, refreshToken, ct);
+        await _authService.LogoutAsync(userId, refreshToken);
 
         var cookieOptions = new CookieOptions
         {
@@ -112,7 +108,8 @@ public class AuthController(
         IResponseCookies cookies,
         string header,
         string token, 
-        int expirationMinutes)
+        int expirationMinutes,
+        string path = "/")
     {
         var baseOptions = new CookieOptions
         {
@@ -120,7 +117,7 @@ public class AuthController(
             Secure = true,
             SameSite = SameSiteMode.Lax,
             Expires = DateTime.UtcNow.AddMinutes(expirationMinutes),
-            Path = "/"
+            Path = path
         };
 
         cookies.Append(header, token, baseOptions);

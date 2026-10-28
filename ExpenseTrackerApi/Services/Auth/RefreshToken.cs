@@ -3,7 +3,7 @@ namespace ExpenseTrackerApi.Services.Auth;
 public class RefreshToken
 {
     public Guid Id { get; set; }
-    public required byte[] TokenHash { get; set; }
+    public required string TokenHash { get; set; } = string.Empty;
     public required Guid UserId { get; set; }
     public required DateTime Created { get; set; }
     public required DateTime Expires { get; set; }
