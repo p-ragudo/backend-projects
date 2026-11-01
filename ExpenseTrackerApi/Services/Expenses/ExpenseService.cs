@@ -1,3 +1,4 @@
+using ExpenseTrackerApi.Common;
 using ExpenseTrackerApi.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -5,7 +6,7 @@ namespace ExpenseTrackerApi.Services.Expenses;
 
 public class ExpenseService(IDb _db)
 {
-    public async Task<CreateExpenseResult> CreateAsync(CreateExpenseRequest request)
+    public async Task<Result<CreateExpenseResult>> CreateAsync(CreateExpenseRequest request)
     {
         var categories = await _db.Categories
             .AsNoTracking()
@@ -34,13 +35,15 @@ public class ExpenseService(IDb _db)
         _db.Expenses.Add(newExpense);
         await _db.SaveChangesAsync();
 
-        return new CreateExpenseResult
+        var result = new CreateExpenseResult
         (
             newExpense.Name,
             newExpense.Amount,
             newExpense.Category.Name,
             newExpense.CreatedAt
         );
+
+        return Result<CreateExpenseResult>.Success(result);
     }
 
     // public async Task<GetExpenseResult> GetAsync()

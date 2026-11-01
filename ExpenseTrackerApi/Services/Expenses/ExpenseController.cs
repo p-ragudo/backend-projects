@@ -16,7 +16,15 @@ public class ExpensesController(
         {
             var result = await _expenseService.CreateAsync(request);
 
-            if (result.)
+            if (result.IsFailure)
+            {
+                return result.Error switch
+                {
+                    
+                };
+            }
+
+            return Ok(result.Value);
         }
         catch (Exception)
         {
