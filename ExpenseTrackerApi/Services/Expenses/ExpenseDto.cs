@@ -13,13 +13,21 @@ public record CreateExpenseResult(
     DateTime CreatedAt
 );
 
-
-public record GetExpenseRequest(
-    string[]? Names,
-    string[]? Categories,
-    decimal[]? Amounts
-);
-
 public record GetExpenseResult(
     List<Expense> Expenses
+);
+
+public record UpdateExpenseRequest(
+    string Guid,
+    string? Name,
+    decimal? Amount,
+    string? Category
+);
+
+public record UpdateExpenseResult(
+    Expense Expense
+);
+
+public record DeleteExpenseResult(
+    Expense Expense
 );

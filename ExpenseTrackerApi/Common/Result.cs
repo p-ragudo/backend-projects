@@ -2,12 +2,13 @@ namespace ExpenseTrackerApi.Common;
 
 public enum ErrorType
 {
-    None,
-    InvalidToken,
-    InvalidCredentials,
-    CompromisedToken,
-    UserNotFound,
-    UserAlreadyExists
+    None = 0,
+    InvalidToken = 1,
+    InvalidCredentials = 2,
+    CompromisedToken = 3,
+    NotFound = 4,
+    UserAlreadyExists = 5,
+    InvalidFormat = 6
 }
 
 public class Result
@@ -32,6 +33,6 @@ public class Result<T> : Result
         Value = value;
     }
 
-    public static Result<T> Success(T value) => new(true, value, null);
+    public static Result<T> Success(T? value = default!) => new(true, value, null);
     public static Result<T> Failure(ErrorType error) => new(false, default, error);
 }
