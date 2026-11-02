@@ -77,6 +77,40 @@ public class AuthController(
         }
     }
 
+    [AllowAnonymous]
+    [HttpPost("refresh-token")]
+    public async Task<ActionResult> RefreshToken(
+        [FromBody] RefreshTokenRequest request,
+        CancellationToken ct)
+    {
+        try
+        {
+            var result = await _authService.RefreshAccessToken(request, ct);
+
+            if (result.IsSuccess)
+            {
+                CookieAppendToken(Response.Cookies, "accessToken", result.AccessToken, accessTokenExpirationMinutes);
+                CookieAppendToken(Response.Cookies, "refreshToken", result.RefreshToken, refreshTokenExpirationMinutes);
+
+                return Ok();
+            }
+            else
+            {
+                return Unauthorized(new
+                {
+                    message = "Invalid or expired refresh token."
+                });
+            }
+        }
+        catch (Exception)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new
+            {
+                message = "An internal server error has occured."
+            });
+        }
+    }
+
     [Authorize]
     [HttpPost("logout")]
     public async Task<ActionResult> Logout()

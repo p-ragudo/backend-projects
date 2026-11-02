@@ -1,6 +1,7 @@
 using System.Text;
 using ExpenseTrackerApi.Data;
 using ExpenseTrackerApi.Services.Auth;
+using ExpenseTrackerApi.Services.Expenses;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -16,6 +17,7 @@ builder.Services.AddDbContext<Db>(options =>
 builder.Services.AddScoped<IDb>(sp => sp.GetRequiredService<Db>());
 
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<ExpenseService>();
 
 builder.Services.AddSingleton<TokenProvider>();
 
@@ -40,6 +42,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 if (context.Request.Cookies.TryGetValue("accessToken", out var accessToken))
                 {
                     context.Token = accessToken;
+                    Console.WriteLine($"[Auth] Token successfully extracted from cookie: {accessToken[..10]}...");
+                }
+                if (context.Request.Cookies.TryGetValue("refreshToken", out var refreshToken))
+                {
+                    Console.WriteLine($"[Auth] Refresh token successfully extracted from cookie: {refreshToken[..10]}...");
+                }
+                else
+                {
+                    Console.WriteLine("[Auth] 'accessToken or refreshToken' cookie not found in request!");
                 }
 
                 return Task.CompletedTask;

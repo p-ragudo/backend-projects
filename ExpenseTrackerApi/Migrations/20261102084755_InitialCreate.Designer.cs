@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ExpenseTrackerApi.Migrations
 {
     [DbContext(typeof(Db))]
-    [Migration("20261027234624_RefreshTokensStoreBytea")]
-    partial class RefreshTokensStoreBytea
+    [Migration("20261102084755_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -44,9 +44,9 @@ namespace ExpenseTrackerApi.Migrations
                     b.Property<DateTime?>("Revoked")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<byte[]>("TokenHash")
+                    b.Property<string>("TokenHash")
                         .IsRequired()
-                        .HasColumnType("bytea");
+                        .HasColumnType("text");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
@@ -79,14 +79,11 @@ namespace ExpenseTrackerApi.Migrations
                     b.ToTable("Users", "ExpenseTrackerApi");
                 });
 
-            modelBuilder.Entity("ExpenseTrackerApi.Services.Expenses.Expense", b =>
+            modelBuilder.Entity("ExpenseTrackerApi.Services.Expenses.Category", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("numeric");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -97,7 +94,44 @@ namespace ExpenseTrackerApi.Migrations
 
                     b.HasKey("Id");
 
+                    b.ToTable("Categories", "ExpenseTrackerApi");
+                });
+
+            modelBuilder.Entity("ExpenseTrackerApi.Services.Expenses.Expense", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
                     b.ToTable("Expenses", "ExpenseTrackerApi");
+                });
+
+            modelBuilder.Entity("ExpenseTrackerApi.Services.Expenses.Expense", b =>
+                {
+                    b.HasOne("ExpenseTrackerApi.Services.Expenses.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
                 });
 #pragma warning restore 612, 618
         }

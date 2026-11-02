@@ -46,10 +46,10 @@ public class ExpenseService(IDb _db)
         return Result<CreateExpenseResult>.Success(result);
     }
 
-    public async Task<Result<GetExpenseResult>> GetAsync()
+    public async Task<Result<GetExpenseResult>> GetAsync(CancellationToken ct)
     {
         var expenseResult = new GetExpenseResult(
-            await _db.Expenses.ToListAsync()
+            await _db.Expenses.ToListAsync(ct)
         );
 
         return Result<GetExpenseResult>.Success(expenseResult);
@@ -62,21 +62,21 @@ public class ExpenseService(IDb _db)
             return Result<UpdateExpenseResult>.Failure(ErrorType.InvalidFormat);
         }
         
-        var existingExpenses = await _db.Expenses
+        var existingExpense = await _db.Expenses
             .FirstOrDefaultAsync(e => e.Id == requestGuid);
         
-        if (existingExpenses is null)
+        if (existingExpense is null)
         {
             return Result<UpdateExpenseResult>.Failure(ErrorType.NotFound);
         }
         
-        existingExpenses.Name = request.Name ?? existingExpenses.Name;
-        existingExpenses.Amount = request.Amount ?? existingExpenses.Amount;
-        existingExpenses.Category.Name = request.Category ?? existingExpenses.Category.Name;
+        existingExpense.Name = request.Name ?? existingExpense.Name;
+        existingExpense.Amount = request.Amount ?? existingExpense.Amount;
+        existingExpense.Category.Name = request.Category ?? existingExpense.Category.Name;
 
         await _db.SaveChangesAsync();
 
-        return Result<UpdateExpenseResult>.Success(new UpdateExpenseResult(existingExpenses));
+        return Result<UpdateExpenseResult>.Success(new UpdateExpenseResult(existingExpense));
     }
 
     public async Task<Result<DeleteExpenseResult>> DeleteAsync(string expenseGuid)
