@@ -12,8 +12,8 @@ public class ExpenseService(IDb _db)
             .AsNoTracking()
             .ToListAsync();
 
-        var category = await _db.Categories.FirstOrDefaultAsync(c => 
-            string.Equals(c.Name, request.Name, StringComparison.OrdinalIgnoreCase));
+        var category = await _db.Categories.FirstOrDefaultAsync(c =>
+            c.Name.ToLower() == request.CategoryName.ToLower());
         
         if (category is null)
         {
@@ -63,6 +63,7 @@ public class ExpenseService(IDb _db)
         }
         
         var existingExpense = await _db.Expenses
+            .Include(e => e.Category)
             .FirstOrDefaultAsync(e => e.Id == requestGuid);
         
         if (existingExpense is null)

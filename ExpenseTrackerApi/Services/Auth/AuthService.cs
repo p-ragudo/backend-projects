@@ -34,7 +34,7 @@ public class AuthService(
         _db.Users.Add(newUser);
 
         var generatedRefreshToken = _tokenProvider.GenerateRefreshToken();
-        var generatedRefreshTokenHash = SHA256.HashData(Encoding.UTF8.GetBytes(generatedRefreshToken)).ToString();
+        var generatedRefreshTokenHash = HashRefreshToken(generatedRefreshToken);
         var generatedAccessToken = _tokenProvider.CreateAccessToken(newUser);
         var expirationMinutes = _configuration.GetValue<int>("ExpenseTrackerApi:Jwt:RefreshTokenExpirationMinutes");
 
@@ -81,7 +81,7 @@ public class AuthService(
         await RevokeAllActiveTokensAsync(user.Id);
 
         var generatedRefreshToken = _tokenProvider.GenerateRefreshToken();
-        var generatedRefreshTokenHash = SHA256.HashData(Encoding.UTF8.GetBytes(generatedRefreshToken)).ToString();
+        var generatedRefreshTokenHash = HashRefreshToken(generatedRefreshToken);
         var generatedAccessToken = _tokenProvider.CreateAccessToken(user);
         var expirationMinutes = _configuration.GetValue<int>("ExpenseTrackerApi:Jwt:RefreshTokenExpirationMinutes");
 
@@ -109,7 +109,7 @@ public class AuthService(
         string userId,
         string refreshToken)
     {
-        var refreshTokenHash = SHA256.HashData(Encoding.UTF8.GetBytes(refreshToken)).ToString();
+        var refreshTokenHash = HashRefreshToken(refreshToken);
         var existingRefreshToken = await _db.RefreshTokens
             .FirstOrDefaultAsync(rt => rt.TokenHash == refreshTokenHash);
 
@@ -126,9 +126,7 @@ public class AuthService(
 
     public async Task<TokenResult> RefreshAccessToken(RefreshTokenRequest request, CancellationToken ct = default)
     {
-        var requestTokenHash = SHA256.HashData(
-            Encoding.UTF8.GetBytes(request.RefreshToken))
-            .ToString();
+        var requestTokenHash = HashRefreshToken(request.RefreshToken);
 
         var existingRefreshToken = await _db.RefreshTokens
             .FirstOrDefaultAsync(rt => rt.TokenHash == requestTokenHash);
@@ -159,7 +157,7 @@ public class AuthService(
         }
 
         var generatedRefreshToken = _tokenProvider.GenerateRefreshToken();
-        var generatedRefreshTokenHash = SHA256.HashData(Encoding.UTF8.GetBytes(generatedRefreshToken)).ToString();
+        var generatedRefreshTokenHash = HashRefreshToken(generatedRefreshToken);
         var generatedAccessToken = _tokenProvider.CreateAccessToken(existingUser);
         var expirationMinutes = _configuration.GetValue<int>("ExpenseTrackerApi:Jwt:RefreshTokenExpirationMinutes");
 
@@ -197,4 +195,7 @@ public class AuthService(
             token.Revoked = DateTime.UtcNow;
         }
     }
+
+    private static string HashRefreshToken(string token) =>
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
 }
