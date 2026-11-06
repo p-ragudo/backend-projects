@@ -79,13 +79,19 @@ public class AuthController(
 
     [AllowAnonymous]
     [HttpPost("refresh-token")]
-    public async Task<ActionResult> RefreshToken(
-        [FromBody] RefreshTokenRequest request,
-        CancellationToken ct)
+    public async Task<ActionResult> RefreshToken(CancellationToken ct)
     {
         try
         {
-            var result = await _authService.RefreshAccessToken(request, ct);
+            if (!Request.Cookies.TryGetValue("refreshToken", out var refreshToken))
+            {
+                return Unauthorized(new
+                {
+                    message = "Refresh token is missing from the request."
+                });
+            }
+
+            var result = await _authService.RefreshAccessToken(refreshToken, ct);
 
             if (result.IsSuccess)
             {

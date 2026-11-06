@@ -124,9 +124,9 @@ public class AuthService(
         }
     }
 
-    public async Task<TokenResult> RefreshAccessToken(RefreshTokenRequest request, CancellationToken ct = default)
+    public async Task<TokenResult> RefreshAccessToken(string refreshToken, CancellationToken ct = default)
     {
-        var requestTokenHash = HashRefreshToken(request.RefreshToken);
+        var requestTokenHash = HashRefreshToken(refreshToken);
 
         var existingRefreshToken = await _db.RefreshTokens
             .FirstOrDefaultAsync(rt => rt.TokenHash == requestTokenHash);

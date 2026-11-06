@@ -86,9 +86,12 @@ public class AuthAndExpenseTests
         using var logoutResponse = await client.SendAsync(logout);
         Assert.Equal(HttpStatusCode.OK, logoutResponse.StatusCode);
 
-        using var refreshResponse = await client.PostAsJsonAsync(
-            "/api/auth/refresh-token",
-            new RefreshTokenRequest(tokens.RefreshToken));
+        using var refreshRequest = new HttpRequestMessage(
+            HttpMethod.Post,
+            "/api/auth/refresh-token");
+        AddAuthCookies(refreshRequest, tokens.AccessToken, tokens.RefreshToken);
+
+        using var refreshResponse = await client.SendAsync(refreshRequest);
 
         Assert.Equal(HttpStatusCode.Unauthorized, refreshResponse.StatusCode);
     }
@@ -109,9 +112,12 @@ public class AuthAndExpenseTests
         using var expiredResponse = await client.SendAsync(expiredRequest);
         Assert.Equal(HttpStatusCode.Unauthorized, expiredResponse.StatusCode);
 
-        using var refreshResponse = await client.PostAsJsonAsync(
-            "/api/auth/refresh-token",
-            new RefreshTokenRequest(tokens.RefreshToken));
+        using var refreshRequest = new HttpRequestMessage(
+            HttpMethod.Post,
+            "/api/auth/refresh-token");
+        AddAuthCookies(refreshRequest, expiredAccessToken, tokens.RefreshToken);
+
+        using var refreshResponse = await client.SendAsync(refreshRequest);
 
         Assert.Equal(HttpStatusCode.OK, refreshResponse.StatusCode);
         var renewedAccessToken = GetCookie(refreshResponse, "accessToken");
@@ -141,9 +147,12 @@ public class AuthAndExpenseTests
             await db.SaveChangesAsync();
         }
 
-        using var response = await client.PostAsJsonAsync(
-            "/api/auth/refresh-token",
-            new RefreshTokenRequest(tokens.RefreshToken));
+        using var refreshRequest = new HttpRequestMessage(
+            HttpMethod.Post,
+            "/api/auth/refresh-token");
+        AddAuthCookies(refreshRequest, tokens.AccessToken, tokens.RefreshToken);
+
+        using var response = await client.SendAsync(refreshRequest);
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
@@ -234,7 +243,7 @@ public class AuthAndExpenseTests
         AddAuthCookies(deleteRequest, tokens.AccessToken, tokens.RefreshToken);
 
         using var deleteResponse = await client.SendAsync(deleteRequest);
-        Assert.Equal(HttpStatusCode.OK, deleteResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
 
         using var finalGet = new HttpRequestMessage(HttpMethod.Get, "/api/expenses");
         AddAuthCookies(finalGet, tokens.AccessToken, tokens.RefreshToken);
@@ -301,7 +310,7 @@ public class AuthAndExpenseTests
                 StringComparison.Ordinal));
 
         Assert.NotNull(cookie);
-        return cookie!.Split(';', 2)[0][(name.Length + 1)..];
+        return Uri.UnescapeDataString(cookie!.Split(';', 2)[0][(name.Length + 1)..]);
     }
 
     private static void AddAuthCookies(
